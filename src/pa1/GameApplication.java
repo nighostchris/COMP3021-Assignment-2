@@ -36,8 +36,6 @@ import javafx.util.Duration;
 import units.*;
 import terrain.*;
 
-
-
 public class GameApplication extends Application 
 {
 	// ============================
@@ -93,8 +91,6 @@ public class GameApplication extends Application
 	private Label lbGameOver;
 	private Button btExitToMenu, btGameOverQuitGame;
 	
-	
-	
 	//==========================================
 	// Section: Control and Rendering Attributes
 	//==========================================
@@ -118,8 +114,6 @@ public class GameApplication extends Application
 	private static final Color MOVEMENT_RANGE_INDICATOR_COLOR = Color.WHITE;
 	private static final Color ATTACK_RANGE_INDICATOR_COLOR = Color.RED;
 	
-	
-	
 	// ===============================
 	// Section: Content Panes Creation
 	// ===============================
@@ -129,7 +123,24 @@ public class GameApplication extends Application
 	// You need to have BorderPane, VBox, Label and 3 Buttons.
 	private Pane paneWelcome() 
 	{
+		lbMenuTitle = new Label("Java Warfare Game");
 		
+		btNewGame = new Button("New Game");
+		btBackgroundMusic = new Button("Enable Background Music");
+		btQuit = new Button("Quit");
+
+		lbMenuTitle.getStyleClass().add("menu-title");
+		btNewGame.getStyleClass().add("menu-button");
+		btQuit.getStyleClass().add("menu-button");
+		btBackgroundMusic.getStyleClass().add("menu-button");
+
+		VBox container = new VBox(20);
+		container.getChildren().addAll(lbMenuTitle, btNewGame, btBackgroundMusic, btQuit);
+		container.setAlignment(Pos.CENTER);
+
+		BorderPane pane = new BorderPane();
+		pane.setCenter(container);
+		return pane;
 	}
 
 	// TODO: Create a pane for scene "GameStart".
@@ -140,7 +151,40 @@ public class GameApplication extends Application
 	// Suggestion: Set the size of Canvas based on RESOLUTION_GAMEPLAY_WIDTH/HEIGHT.
 	private Pane paneStartGame() 
 	{
+		canvasGameStart = new Canvas(RESOLUTION_GAMEPLAY_WIDTH, RESOLUTION_GAMEPLAY_HEIGHT);
 		
+		btLoadTerrainMap = new Button("Load Map");
+		btLoadPlayersAndUnits = new Button("Load Players And Units");
+		btStartGame = new Button("Start Game");
+		btQuitToMenu = new Button("Quit Game");
+		
+		listViewUnit = new ListView<String>();
+		
+		lbMapPosition = new Label("");
+		lbUnitDetails = new Label("Units");
+
+		btLoadTerrainMap.getStyleClass().add("menu-button");
+		btLoadPlayersAndUnits.getStyleClass().add("menu-button");
+		btStartGame.getStyleClass().add("menu-button");
+		btQuitToMenu.getStyleClass().add("menu-button");
+		
+		listViewUnit.setPrefSize(150, 200);
+		listViewUnit.setItems(listViewUnitItems);
+		
+		VBox containerCanvas = new VBox(20);
+		containerCanvas.getChildren().addAll(canvasGameStart);
+		containerCanvas.setAlignment(Pos.CENTER);
+
+		VBox containerCtrl = new VBox(20);
+		containerCtrl.getChildren().addAll(btLoadTerrainMap, lbMapPosition, btLoadPlayersAndUnits, lbUnitDetails,
+										   listViewUnit, btStartGame, btQuitToMenu);
+		containerCtrl.setAlignment(Pos.CENTER);
+		containerCtrl.setPadding(new Insets(10, 10, 10, 10));
+
+		BorderPane pane = new BorderPane();
+		pane.setCenter(containerCanvas);
+		pane.setLeft(containerCtrl);
+		return pane;
 	}
  
 	// TODO: Create a pane for scene "GamePlay".
@@ -156,7 +200,31 @@ public class GameApplication extends Application
 	// StackPane displays like a Stack, the canvas added last will be displayed on top.
 	private Pane paneGamePlay() 
 	{
+		ListView<VBox> listViewUnit = new ListView<VBox>();
+		StackPane stackPane = new StackPane();
 		
+		for (int i = 0; i < NUM_LAYERS; i++)
+		{
+			canvasGamePlayLayers[i] = new Canvas(RESOLUTION_GAMEPLAY_WIDTH, RESOLUTION_GAMEPLAY_HEIGHT);
+			stackPane.getChildren().add(canvasGamePlayLayers[i]);
+		}
+		
+		lbCurrentTurn = new Label("");
+		lbGamePlayInfo = new Label("Game Info");
+		
+		btGamePlayQuitToMenu = new Button("Quit To Menu");
+		
+		listViewUnit.setPrefSize(150, 200);
+		listViewUnit.setItems(listViewGamePlayUnitInfoItems);
+
+		VBox container = new VBox(20);
+
+		container.getChildren().addAll(stackPane, lbCurrentTurn, lbGamePlayInfo, listViewUnit, btGamePlayQuitToMenu);
+		container.setAlignment(Pos.CENTER);
+		
+		BorderPane pane = new BorderPane();
+		pane.setLeft(container);
+		return pane;
 	}
 
 	// TODO: Create a pane for scene "GameOver".
@@ -165,10 +233,23 @@ public class GameApplication extends Application
 	// It is used to display who is the winner later.
 	private Pane paneGameOver() 
 	{
-		
+		lbGameOver = new Label("");
+		btExitToMenu = new Button("Exit to Menu");
+		btGameOverQuitGame = new Button("Quit Game");
+
+		lbGameOver.getStyleClass().add("menu-title");
+		btExitToMenu.getStyleClass().add("menu-button");
+		btGameOverQuitGame.getStyleClass().add("menu-button");
+
+		VBox container = new VBox(20);
+		container.getChildren().addAll(lbGameOver, btExitToMenu, btGameOverQuitGame);
+		container.setAlignment(Pos.CENTER);
+
+		BorderPane pane = new BorderPane();
+
+		pane.setCenter(container);
+		return pane;
 	}
-	
-	
 	
 	// ======================================================
 	// Section: Event Handlers (Naming convention: handle___)
@@ -201,7 +282,10 @@ public class GameApplication extends Application
 	// Call Platform.exit() to exit the game.
 	private void handleExitGame()
 	{
-		
+		Alert alert = new Alert(AlertType.CONFIRMATION, "Do you want to exit this game?", ButtonType.YES, ButtonType.NO);
+		alert.showAndWait();
+		if (alert.getResult() == ButtonType.YES)
+			Platform.exit();
 	}
 	
 	// TODO: Load Terrain Map from chosen textfile.
@@ -214,7 +298,24 @@ public class GameApplication extends Application
 	// Also render the new Terrain Map.
 	private void handleLoadMap() 
 	{
-		
+		FileChooser filechooser = new FileChooser();
+		filechooser.setTitle("Load Map");		
+		filechooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text files", "*.txt"));
+		File txtFile = filechooser.showOpenDialog(stage);
+		if (txtFile != null)
+		{
+			try
+			{
+				gameMap.loadTerrainMap(txtFile);
+			}
+			catch (IOException e)
+			{
+				showErrorDialog("IOExceptions found when loading map.");
+			}
+		}
+		canvasGameStart.setWidth(gameMap.getWidth() * TILE_WIDTH);
+		canvasGameStart.setHeight(gameMap.getHeight() * TILE_HEIGHT);
+		renderTerrainMap(canvasGameStart);
 	}
 	
 	// TODO: Load Players and Units from chosen textfile.
@@ -226,7 +327,22 @@ public class GameApplication extends Application
 	// If any Units were placed onto the Terrain Map, remember to reset their starting locations and remove them from canvasGameStart rendering.
 	private void handleLoadPlayersAndUnits() 
 	{
-		
+		FileChooser filechooser = new FileChooser();
+		filechooser.setTitle("Load Unit");
+		filechooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text files", "*.txt"));
+		File txtFile = filechooser.showOpenDialog(stage);
+		if (txtFile != null)
+		{
+			try
+			{
+				gameEngine.loadPlayersAndUnits(txtFile);
+			}
+			catch (IOException e)
+			{
+				showErrorDialog("IOExceptions found when loading players and units.");
+			}
+		}
+		updateListViewUnitItems();
 	}
 	
 	private void handleGameStartButton() 
@@ -274,12 +390,24 @@ public class GameApplication extends Application
 		{
 			if (!listViewSelectedUnit.equals("")) 
 			{
-				char unitId = listViewSelectedUnit.charAt(0); // Get the ID of selectedUnit.
+				// Get the ID of selectedUnit.
+				char unitId = listViewSelectedUnit.charAt(0); 
 				
 				Unit selectedUnit = null;
+				
 				// ================================================
 				// TODO: 1) Find the selectedUnit from the Players.
-				
+				for (Player player : gameEngine.getPlayers())
+				{
+					for (Unit unit : player.getUnits())
+					{
+						if (unit.getId() == unitId)
+						{
+							selectedUnit = unit;
+							break;
+						}
+					}
+				}
 				// ================================================
 
 				if (selectedUnit != null)
@@ -289,19 +417,22 @@ public class GameApplication extends Application
 					int terrainMapY = gameMap.canvasToTerrainMapY(canvasY);
 					
 					// TODO 2): Check to make sure that the Terrain Map location is not blocked (by other Unit or by MOVEMENT_COST -1).
-					if () 
+					if (!gameMap.getTerrainAtLocation(terrainMapX, terrainMapY).isOccupied() && 
+						!gameMap.getTerrainAtLocation(terrainMapX, terrainMapY).isBlocked()) 
 					{
 						listViewUnit.getSelectionModel().clearSelection();
 						listViewUnitItems.remove(listViewSelectedUnit);
 
 						// TODO 3): Set the Starting Location of the Unit. Also render it and its Unit Text onto canvasGameStart.
-						
+						selectedUnit.setStartingLocation(terrainMapX, terrainMapY);
+						renderUnit(canvasGameStart, selectedUnit);
+						renderUnitText(canvasGameStart, selectedUnit);
 					} 
 					
 					else 
 					{
 						// TODO 4): Otherwise, showErrorDialog() that "Target Location is blocked."
-						
+						showErrorDialog("Target Location is blocked.");
 						return;
 					}
 				}
@@ -327,8 +458,6 @@ public class GameApplication extends Application
 			processGamePlayWithUnitSelected(terrainX, terrainY);
 		}
 	}
-	
-	
 	
 	// =======================================================================
 	// Section: Event Handler Initializers (Naming convention: init___Handler)
@@ -368,7 +497,9 @@ public class GameApplication extends Application
 	// There are 3 Buttons in scene "Welcome".
 	private void initWelcomeSceneHandler() 
 	{
-
+		btNewGame.setOnAction(e -> handleNewGame());
+		btBackgroundMusic.setOnAction(e -> handleBackgroundMusic());
+		btQuit.setOnAction(e -> handleExitGame());
 	}
 
 	private void initStartGameSceneHandler() 
@@ -388,11 +519,14 @@ public class GameApplication extends Application
 		// TODO: Connect the handle___() methods to "Load Terrain Map", "Load Players and Units", and "Start Game" Buttons.
 		// Also connect the handle___() method to canvasGameStart, which places Units onto the Terrain Map when the User Mouse-Clicks.
 		// "Quit to Menu" Button handle___() method as well as canvasGameStart.setOnMouseMoved() has already been setup as a code reference.
-
+		btLoadTerrainMap.setOnAction(e -> handleLoadMap());
+		btLoadPlayersAndUnits.setOnAction(e -> handleLoadPlayersAndUnits());
+		btStartGame.setOnAction(e -> handleGameStartButton());
 		
+		canvasGameStart.setOnMouseClicked(e -> handleCanvasGameStartMouseClick(e.getX(), e.getY()));
 		canvasGameStart.setOnMouseMoved(e -> handleCanvasGameStartMouseMovement(e.getX(), e.getY()));
-			
-		btQuitToMenu.setOnAction(e ->
+		
+		btQuitToMenu.setOnAction((e) ->
 		{
 			gameEngine.unloadPlayersAndUnits();
 			gameMap.unloadTerrainMap();
@@ -408,18 +542,23 @@ public class GameApplication extends Application
 	// Remember to call stopGamePlay() when clicked on "Quit To Menu" Button before going back to scene "Welcome".
 	private void initGamePlaySceneHandler()
 	{
-
+		canvasGamePlayLayers[TOP_LAYER].setOnMouseClicked(e -> handleCanvasGamePlayMouseClick(e.getX(), e.getY()));
+		
+		btGamePlayQuitToMenu.setOnAction((e) -> 
+		{
+			stopGamePlay();
+			putSceneOnStage(SCENE_WELCOME);
+		});
 	}
 	
 	// TODO: Connect the handle___() methods to scene "GameOver".
 	// There are 2 Buttons, "Exit to Menu" and "Quit Game".
 	private void initGameOverHandler()
 	{
-
+		btExitToMenu.setOnAction(e -> putSceneOnStage(SCENE_WELCOME));
+		btGameOverQuitGame.setOnAction(e -> handleExitGame());
 	}
 
-	
-	
 	// ====================================
 	// Section: Text and UI-Related Methods
 	// ====================================

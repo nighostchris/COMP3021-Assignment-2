@@ -10,8 +10,6 @@ import exceptions.*;
 import units.*;
 import terrain.*;
 
-
-
 public class GameEngine 
 {
 	private ArrayList<Player> players = new ArrayList<>();

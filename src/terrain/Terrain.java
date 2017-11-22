@@ -7,7 +7,7 @@ import units.Unit;
 // NOTE: TerrainOutOfBounds is a special case and the code is fully given.
 public abstract class Terrain
 {
-	protected static final int MOVEMENT_COST = 0;
+	protected final int MOVEMENT_COST;
 	protected boolean impassable = false;
 	protected boolean occupied = false;
 	protected Unit occupyingUnit = null;
