@@ -682,21 +682,33 @@ public class GameApplication extends Application
 	// You may call renderImageTile().
 	private void renderTerrainTile(Canvas layer, Terrain terrain, int terrainMapX, int terrainMapY)
 	{
-
+		Image terrainImage = terrain.getImage();
+		renderImageTile(layer, terrainImage, terrainMapX, terrainMapY);
 	}
 	
 	// TODO: Render the whole Terrain Map onto the given canvas layer.
 	// You may call renderTerrainTile().
 	private void renderTerrainMap(Canvas layer)
 	{
-
+		int mapWidth = gameMap.getWidth();
+		int mapHeight = gameMap.getHeight();
+		for (int i = 0; i < mapHeight; i++)
+			for (int j = 0; j < mapWidth; j++)
+			{
+				Terrain tileToRender = gameMap.getTerrainAtLocation(j, i);
+				renderTerrainTile(layer, tileToRender, j, i);
+			}
 	}
 	
 	// TODO: Render the Unit onto the given canvas layer. Hint: Unit keeps track of its location.
 	// You may call renderImageTile().
 	private void renderUnit(Canvas layer, Unit unit)
 	{
-
+		int unitXCoor = unit.getLocationX();
+		int unitYCoor = unit.getLocationY();
+		Image unitImage = unit.getImage();
+		
+		renderImageTile(layer, unitImage, unitXCoor, unitYCoor);
 	}
 	
 	// TODO: Render the Unit ID of the given Unit onto the given canvas layer.
@@ -705,7 +717,22 @@ public class GameApplication extends Application
 	// Add UNIT_TEXT_WIDTH_OFFSET and UNIT_TEXT_HEIGHT_OFFSET to render the text at bottom-right corner of the Unit.
 	private void renderUnitText(Canvas layer, Unit unit)
 	{
-
+		char unitID = unit.getId();
+		double unitXCoor = gameMap.terrainMapToCanvasX(unit.getLocationX());
+		double unitYCoor = gameMap.terrainMapToCanvasY(unit.getLocationY());
+		
+		if (unit.isReady())
+		{
+			layer.getGraphicsContext2D().setStroke(UNIT_READY_TEXT_COLOR);
+			layer.getGraphicsContext2D().strokeText(String.valueOf(unitID), unitXCoor + UNIT_TEXT_WIDTH_OFFSET, 
+													unitYCoor + UNIT_TEXT_HEIGHT_OFFSET);
+		}
+		else
+		{
+			layer.getGraphicsContext2D().setStroke(UNIT_DONE_TEXT_COLOR);
+			layer.getGraphicsContext2D().strokeText(String.valueOf(unitID), unitXCoor + UNIT_TEXT_WIDTH_OFFSET, 
+													unitYCoor + UNIT_TEXT_HEIGHT_OFFSET);
+		}
 	}
 	
 	// TODO: Render the Movement Range and Attack Range Indicator Tiles.
@@ -720,7 +747,24 @@ public class GameApplication extends Application
 	// Hint: renderColor has getRed(), getGreen(), getBlue() methods.
 	private void renderRangeIndicator(Canvas layer, Unit unit, boolean[][] rangeMap, Color renderColor)
 	{
-
+		int rangeMapWidth = rangeMap[0].length;
+		int rangeMapHeight = rangeMap.length;
+		for (int i = 0; i < rangeMapHeight; i++)
+		{
+			for (int j = 0; j < rangeMapWidth; j++)
+			{
+				if (rangeMap[i][j] == true)
+				{
+					int terrainMapX = unit.attackMapToTerrainMapX(j);
+					int terrainMapY = unit.attackMapToTerrainMapY(i);
+					GraphicsContext gc = layer.getGraphicsContext2D();
+					gc.setFill(renderColor);
+					gc.fillRect(terrainMapX, terrainMapY, TILE_WIDTH, TILE_HEIGHT);
+					gc.setStroke(renderColor);
+					gc.strokeRect(terrainMapX, terrainMapY, TILE_WIDTH, TILE_HEIGHT);
+				}
+			}
+		}
 	}
 	
 	// TODO: Render the starting Terrain Map, Units, Unit ID at the beginning of GamePlay.
@@ -728,7 +772,18 @@ public class GameApplication extends Application
 	// Remember to render to the correct layer in canvasGamePlayLayers.
 	private void renderInitGamePlayCanvas() 
 	{
-
+		renderTerrainMap(canvasGamePlayLayers[TERRAIN_LAYER]);
+		
+		for (Player player : gameEngine.getPlayers())
+		{
+			for (Unit unit : player.getUnits())
+			{
+				renderUnit(canvasGamePlayLayers[UNIT_LAYER], unit);
+				renderUnitText(canvasGamePlayLayers[TEXT_LAYER], unit);
+			}
+		}
+		
+		animateWaterTiles(canvasGamePlayLayers[TERRAIN_LAYER]);
 	}
 	
 	// TODO: Create a new Thread for each Water Tile to manage the Water Animations.
@@ -758,10 +813,19 @@ public class GameApplication extends Application
 	// }
 	private void animateWaterTiles(Canvas layer)
 	{
-
+		int mapWidth = gameMap.getWidth();
+		int mapHeight = gameMap.getHeight();
+		for (int i = 0; i < mapHeight; i++)
+		{
+			for (int j = 0; j < mapWidth; j++)
+			{
+				Terrain terrain = gameMap.getTerrainAtLocation(j, i);
+				// suppose I got the water tile already
+				
+				
+			}
+		}
 	}
-	
-	
 	
 	// =============================================================================
 	// Section: Gameplay-related Methods (Mostly calls to GameEngine and/or GameMap)
