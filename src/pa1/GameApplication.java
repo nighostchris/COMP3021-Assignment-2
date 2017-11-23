@@ -777,37 +777,32 @@ public class GameApplication extends Application
 	// Hint: renderColor has getRed(), getGreen(), getBlue() methods.
 	private void renderRangeIndicator(Canvas layer, Unit unit, boolean[][] rangeMap, Color renderColor)
 	{
-		int rangeMapWidth = rangeMap[0].length;
-		int rangeMapHeight = rangeMap.length;
-		for (int i = 0; i < rangeMapHeight; i++)
+		for (int i = 0; i < rangeMap[0].length; i++)
 		{
-			for (int j = 0; j < rangeMapWidth; j++)
+			for (int j = 0; j < rangeMap.length; j++)
 			{
-				if (rangeMap[i][j] == true)
+				if (rangeMap[j][i] == true)
 				{
-					int terrainMapX;
-					int terrainMapY;
-					if (renderColor == Color.RED)
+					int terrainMapX = -1;
+					int terrainMapY = -1;
+					
+					if (renderColor == ATTACK_RANGE_INDICATOR_COLOR)
 					{
-						terrainMapX = unit.attackMapToTerrainMapX(j);
-						terrainMapY = unit.attackMapToTerrainMapY(i);
-					}
-					else
-					{
-						terrainMapX = unit.movementMapToTerrainMapX(j);
-						terrainMapY = unit.movementMapToTerrainMapY(i);
+						terrainMapX = unit.attackMapToTerrainMapX(i);
+						terrainMapY = unit.attackMapToTerrainMapY(j);
 					}
 					
-					double canvasX = gameMap.terrainMapToCanvasX(terrainMapX);
-					double canvasY = gameMap.terrainMapToCanvasY(terrainMapY);
-					if (canvasX >= 0 && canvasY >= 0 && canvasX < RESOLUTION_GAMEPLAY_WIDTH && canvasY < RESOLUTION_GAMEPLAY_HEIGHT)
+					if (renderColor == MOVEMENT_RANGE_INDICATOR_COLOR)
 					{
-						GraphicsContext gc = layer.getGraphicsContext2D();
-						gc.setFill(Color.color(renderColor.getRed(), renderColor.getGreen(), renderColor.getBlue(), 0.5));
-						gc.fillRect(gameMap.terrainMapToCanvasX(terrainMapX), gameMap.terrainMapToCanvasY(terrainMapY), TILE_WIDTH, TILE_HEIGHT);
-						gc.setStroke(renderColor);
-						gc.strokeRect(gameMap.terrainMapToCanvasX(terrainMapX), gameMap.terrainMapToCanvasY(terrainMapY), TILE_WIDTH, TILE_HEIGHT);
+						terrainMapX = unit.movementMapToTerrainMapX(i);
+						terrainMapY = unit.movementMapToTerrainMapY(j);
 					}
+					
+					GraphicsContext gc = layer.getGraphicsContext2D();
+					gc.setFill(Color.color(renderColor.getRed(), renderColor.getGreen(), renderColor.getBlue(), 0.9));
+					gc.fillRect(gameMap.terrainMapToCanvasX(terrainMapX), gameMap.terrainMapToCanvasY(terrainMapY), TILE_WIDTH, TILE_HEIGHT);
+					gc.setStroke(renderColor);
+					gc.strokeRect(gameMap.terrainMapToCanvasX(terrainMapX), gameMap.terrainMapToCanvasY(terrainMapY), TILE_WIDTH, TILE_HEIGHT);
 				}
 			}
 		}
