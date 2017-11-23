@@ -22,6 +22,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.control.Alert;
@@ -217,13 +218,18 @@ public class GameApplication extends Application
 		listViewUnit.setPrefSize(150, 200);
 		listViewUnit.setItems(listViewGamePlayUnitInfoItems);
 
-		VBox container = new VBox(20);
+		HBox topContainer = new HBox();
+		VBox bottomContainer = new VBox(20);
 
-		container.getChildren().addAll(stackPane, lbCurrentTurn, lbGamePlayInfo, listViewUnit, btGamePlayQuitToMenu);
-		container.setAlignment(Pos.CENTER);
+		topContainer.getChildren().addAll(stackPane, listViewUnit);
+		topContainer.setAlignment(Pos.CENTER);
+			
+		bottomContainer.getChildren().addAll(lbCurrentTurn, lbGamePlayInfo, btGamePlayQuitToMenu);
+		bottomContainer.setAlignment(Pos.CENTER);
 		
 		BorderPane pane = new BorderPane();
-		pane.setLeft(container);
+		pane.setCenter(topContainer);
+		pane.setBottom(bottomContainer);
 		return pane;
 	}
 
@@ -306,6 +312,19 @@ public class GameApplication extends Application
 		{
 			try
 			{
+				if (gameMap.getWidth() != 0)
+				{
+					gameMap.unloadTerrainMap();
+					for (Player player : gameEngine.getPlayers())
+					{
+						for (Unit unit : player.getUnits())
+						{
+							clearTile(canvasGameStart, unit.getLocationX(), unit.getLocationY());
+							unit.resetStartingLocation();
+						}
+					}
+					updateListViewUnitItems();
+				}
 				gameMap.loadTerrainMap(txtFile);
 			}
 			catch (IOException e)
@@ -335,6 +354,19 @@ public class GameApplication extends Application
 		{
 			try
 			{
+				if (gameEngine.getPlayers().size() != 0)
+				{
+					for (Player player : gameEngine.getPlayers())
+					{
+						for (Unit unit : player.getUnits())
+						{
+							clearTile(canvasGameStart, unit.getLocationX(), unit.getLocationY());
+							unit.resetStartingLocation();
+						}
+					}
+					gameEngine.unloadPlayersAndUnits();
+					renderTerrainMap(canvasGameStart);
+				}
 				gameEngine.loadPlayersAndUnits(txtFile);
 			}
 			catch (IOException e)
@@ -418,7 +450,7 @@ public class GameApplication extends Application
 					
 					// TODO 2): Check to make sure that the Terrain Map location is not blocked (by other Unit or by MOVEMENT_COST -1).
 					if (!gameMap.getTerrainAtLocation(terrainMapX, terrainMapY).isOccupied() && 
-						!gameMap.getTerrainAtLocation(terrainMapX, terrainMapY).isBlocked()) 
+						!(gameMap.getTerrainAtLocation(terrainMapX, terrainMapY).getMovementCost() == -1))
 					{
 						listViewUnit.getSelectionModel().clearSelection();
 						listViewUnitItems.remove(listViewSelectedUnit);
@@ -653,8 +685,6 @@ public class GameApplication extends Application
 		}
 	}
 	
-	
-	
 	// ==================================
 	// Section: Rendering-Related Methods
 	// ==================================
@@ -755,13 +785,29 @@ public class GameApplication extends Application
 			{
 				if (rangeMap[i][j] == true)
 				{
-					int terrainMapX = unit.attackMapToTerrainMapX(j);
-					int terrainMapY = unit.attackMapToTerrainMapY(i);
-					GraphicsContext gc = layer.getGraphicsContext2D();
-					gc.setFill(renderColor);
-					gc.fillRect(terrainMapX, terrainMapY, TILE_WIDTH, TILE_HEIGHT);
-					gc.setStroke(renderColor);
-					gc.strokeRect(terrainMapX, terrainMapY, TILE_WIDTH, TILE_HEIGHT);
+					int terrainMapX;
+					int terrainMapY;
+					if (renderColor == Color.RED)
+					{
+						terrainMapX = unit.attackMapToTerrainMapX(j);
+						terrainMapY = unit.attackMapToTerrainMapY(i);
+					}
+					else
+					{
+						terrainMapX = unit.movementMapToTerrainMapX(j);
+						terrainMapY = unit.movementMapToTerrainMapY(i);
+					}
+					
+					double canvasX = gameMap.terrainMapToCanvasX(terrainMapX);
+					double canvasY = gameMap.terrainMapToCanvasY(terrainMapY);
+					if (canvasX >= 0 && canvasY >= 0 && canvasX < RESOLUTION_GAMEPLAY_WIDTH && canvasY < RESOLUTION_GAMEPLAY_HEIGHT)
+					{
+						GraphicsContext gc = layer.getGraphicsContext2D();
+						gc.setFill(Color.color(renderColor.getRed(), renderColor.getGreen(), renderColor.getBlue(), 0.5));
+						gc.fillRect(gameMap.terrainMapToCanvasX(terrainMapX), gameMap.terrainMapToCanvasY(terrainMapY), TILE_WIDTH, TILE_HEIGHT);
+						gc.setStroke(renderColor);
+						gc.strokeRect(gameMap.terrainMapToCanvasX(terrainMapX), gameMap.terrainMapToCanvasY(terrainMapY), TILE_WIDTH, TILE_HEIGHT);
+					}
 				}
 			}
 		}
@@ -819,10 +865,50 @@ public class GameApplication extends Application
 		{
 			for (int j = 0; j < mapWidth; j++)
 			{
+				final int terrainMapX = j;
+				final int terrainMapY = i;
+				
 				Terrain terrain = gameMap.getTerrainAtLocation(j, i);
-				// suppose I got the water tile already
-				
-				
+				if (terrain instanceof Water)
+				{
+					Thread waterAnimThread = new Thread(new Runnable()
+					{
+						private final int locationX = terrainMapX;
+						private final int locationY = terrainMapY;
+						
+						@Override
+						public void run()
+						{
+							try
+							{
+								int no = 0;
+								while (no < Water.NUM_ANIM_FRAMES)
+								{
+									Image newImage = ((Water) terrain).getAnimFrame(no);
+									no++;
+									if (no > Water.NUM_ANIM_FRAMES)
+										no = 0;
+									
+									Platform.runLater(new Runnable()
+									{
+										@Override
+										public void run()
+										{
+											clearTile(layer, locationX, locationY);
+											renderImageTile(layer, newImage, locationX, locationY);
+										}
+									});
+									
+									Thread.sleep(Water.ANIM_TIME_PER_FRAME);
+								}
+							}
+							catch (InterruptedException ex) {}
+						}
+					});
+					
+					animThreads.add(waterAnimThread);
+					waterAnimThread.start();
+				}
 			}
 		}
 	}
