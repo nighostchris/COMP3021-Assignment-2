@@ -153,7 +153,7 @@ public class GameApplication extends Application
 	// Suggestion: Set the size of Canvas based on RESOLUTION_GAMEPLAY_WIDTH/HEIGHT.
 	private Pane paneStartGame() 
 	{
-		canvasGameStart = new Canvas(RESOLUTION_GAMEPLAY_WIDTH, RESOLUTION_GAMEPLAY_HEIGHT);
+		canvasGameStart = new Canvas();
 		
 		btLoadTerrainMap = new Button("Load Map");
 		btLoadPlayersAndUnits = new Button("Load Players And Units");
@@ -211,7 +211,7 @@ public class GameApplication extends Application
 		
 		for (int i = 0; i < NUM_LAYERS; i++)
 		{
-			canvasGamePlayLayers[i] = new Canvas(RESOLUTION_GAMEPLAY_WIDTH, RESOLUTION_GAMEPLAY_HEIGHT);
+			canvasGamePlayLayers[i] = new Canvas();
 			stackPane.getChildren().add(canvasGamePlayLayers[i]);
 		}
 		
@@ -220,23 +220,30 @@ public class GameApplication extends Application
 		
 		btGamePlayQuitToMenu = new Button("Quit To Menu");
 
+		btGamePlayQuitToMenu.getStyleClass().add("menu-button");
 		lbCurrentTurn.getStyleClass().add("info-style");
 		lbGamePlayInfo.getStyleClass().add("info-style");
-		listViewUnit.setPrefSize(150, 200);
+		listViewUnit.setPrefSize(100, 500);
 		listViewUnit.setItems(listViewGamePlayUnitInfoItems);
-
-		HBox topContainer = new HBox();
+		
+		VBox leftContainer = new VBox(20);
+		VBox rightContainer = new VBox(20);
 		VBox bottomContainer = new VBox(20);
-
-		topContainer.getChildren().addAll(stackPane, listViewUnit);
-		topContainer.setAlignment(Pos.CENTER);
-			
+		
+		leftContainer.getChildren().addAll(stackPane);
+		leftContainer.setAlignment(Pos.CENTER);
+		
+		rightContainer.getChildren().addAll(listViewUnit);
+		rightContainer.setAlignment(Pos.CENTER);
+		rightContainer.setPadding(new Insets(20, 20, 0, 0));
+		
 		bottomContainer.getChildren().addAll(lbCurrentTurn, lbGamePlayInfo, btGamePlayQuitToMenu);
 		bottomContainer.setAlignment(Pos.CENTER);
 		
 		BorderPane pane = new BorderPane();
 		pane.getStyleClass().add("gameplay-background");
-		pane.setCenter(topContainer);
+		pane.setCenter(leftContainer);
+		pane.setRight(rightContainer);
 		pane.setBottom(bottomContainer);
 		return pane;
 	}
@@ -341,7 +348,12 @@ public class GameApplication extends Application
 			}
 		}
 		canvasGameStart.setWidth(gameMap.getWidth() * TILE_WIDTH);
-		canvasGameStart.setHeight(gameMap.getHeight() * TILE_HEIGHT);
+		canvasGameStart.setHeight(gameMap.getHeight() * TILE_HEIGHT);		
+		for (int i = 0; i < NUM_LAYERS; i++)
+		{
+			canvasGamePlayLayers[i].setWidth(gameMap.getWidth() * TILE_WIDTH);
+			canvasGamePlayLayers[i].setHeight(gameMap.getHeight() * TILE_HEIGHT);
+		}
 		renderTerrainMap(canvasGameStart);
 	}
 	
@@ -784,7 +796,7 @@ public class GameApplication extends Application
 	// Hint: For transparency effect, use Color.color(red, green, blue, transparency). [0, 1.0], zero is fully transparent, 1.0 is fully opaque/solid.
 	// Hint: renderColor has getRed(), getGreen(), getBlue() methods.
 	private void renderRangeIndicator(Canvas layer, Unit unit, boolean[][] rangeMap, Color renderColor)
-	{	
+	{
 		for (int i = 0; i < rangeMap[0].length; i++)
 		{
 			for (int j = 0; j < rangeMap.length; j++)
