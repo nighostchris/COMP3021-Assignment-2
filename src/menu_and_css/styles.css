@@ -1,9 +1,33 @@
 .menu-title {
     -fx-font-size: 25;
-
+    -fx-text-fill: white;
+    -fx-font-family: "Times New Roman";
+    -fx-font-weight: bold;
+}
+.info-style{
+    -fx-font-size: 18;
+    -fx-text-fill: white;
+    -fx-font-family: "Times New Roman";
+    -fx-font-weight: bold;
 }
 .menu-button {
+     -fx-border-color: gold;
      -fx-pref-width:200;
      -fx-pref-height:40;
      -fx-padding: 8 15 15 15;
+     -fx-background-color: red;
+     -fx-text-fill: white;
+     -fx-font-family: "Times New Roman";
+     -fx-font-weight: bold;
+}
+.welcome-background {
+     -fx-background-image: url('./background_image_welcome.jpg');
+     -fx-background-repeat: no-repeat;
+     -fx-background-position: center;
+}
+.gameplay-background {
+     -fx-background-color: teal;
+}
+.gameover-background {
+     -fx-background-image: url('./background_image_game_over.jpg');
 }

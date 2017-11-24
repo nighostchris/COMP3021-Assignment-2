@@ -5,7 +5,7 @@ import pa1.GameApplication;
 
 public class Forest extends Terrain
 {
-	private static final Image IMAGE_FOREST = new Image("terrain_images/forest.png");
+	private static final Image IMAGE_FOREST = new Image("terrain_images/forest.png", GameApplication.TILE_WIDTH, GameApplication.TILE_HEIGHT, true, true);
 	
 	public Forest()
 	{

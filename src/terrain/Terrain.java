@@ -15,6 +15,8 @@ public abstract class Terrain
 	public Terrain(int movementCost)
 	{
 		this.MOVEMENT_COST = movementCost;
+		if (movementCost < 0)
+			impassable = true;
 	}
 	
 	public abstract Image getImage();

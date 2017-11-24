@@ -140,6 +140,7 @@ public class GameApplication extends Application
 		container.setAlignment(Pos.CENTER);
 
 		BorderPane pane = new BorderPane();
+		pane.getStyleClass().add("welcome-background");
 		pane.setCenter(container);
 		return pane;
 	}
@@ -169,6 +170,9 @@ public class GameApplication extends Application
 		btStartGame.getStyleClass().add("menu-button");
 		btQuitToMenu.getStyleClass().add("menu-button");
 		
+		lbMapPosition.getStyleClass().add("info-style");
+		lbUnitDetails.getStyleClass().add("info-style");
+		
 		listViewUnit.setPrefSize(150, 200);
 		listViewUnit.setItems(listViewUnitItems);
 		
@@ -183,6 +187,7 @@ public class GameApplication extends Application
 		containerCtrl.setPadding(new Insets(10, 10, 10, 10));
 
 		BorderPane pane = new BorderPane();
+		pane.getStyleClass().add("gameplay-background");
 		pane.setCenter(containerCanvas);
 		pane.setLeft(containerCtrl);
 		return pane;
@@ -214,7 +219,9 @@ public class GameApplication extends Application
 		lbGamePlayInfo = new Label("Game Info");
 		
 		btGamePlayQuitToMenu = new Button("Quit To Menu");
-		
+
+		lbCurrentTurn.getStyleClass().add("info-style");
+		lbGamePlayInfo.getStyleClass().add("info-style");
 		listViewUnit.setPrefSize(150, 200);
 		listViewUnit.setItems(listViewGamePlayUnitInfoItems);
 
@@ -228,6 +235,7 @@ public class GameApplication extends Application
 		bottomContainer.setAlignment(Pos.CENTER);
 		
 		BorderPane pane = new BorderPane();
+		pane.getStyleClass().add("gameplay-background");
 		pane.setCenter(topContainer);
 		pane.setBottom(bottomContainer);
 		return pane;
@@ -252,7 +260,7 @@ public class GameApplication extends Application
 		container.setAlignment(Pos.CENTER);
 
 		BorderPane pane = new BorderPane();
-
+		pane.getStyleClass().add("gameover-background");
 		pane.setCenter(container);
 		return pane;
 	}
@@ -776,7 +784,7 @@ public class GameApplication extends Application
 	// Hint: For transparency effect, use Color.color(red, green, blue, transparency). [0, 1.0], zero is fully transparent, 1.0 is fully opaque/solid.
 	// Hint: renderColor has getRed(), getGreen(), getBlue() methods.
 	private void renderRangeIndicator(Canvas layer, Unit unit, boolean[][] rangeMap, Color renderColor)
-	{
+	{	
 		for (int i = 0; i < rangeMap[0].length; i++)
 		{
 			for (int j = 0; j < rangeMap.length; j++)
@@ -799,7 +807,7 @@ public class GameApplication extends Application
 					}
 					
 					GraphicsContext gc = layer.getGraphicsContext2D();
-					gc.setFill(Color.color(renderColor.getRed(), renderColor.getGreen(), renderColor.getBlue(), 0.9));
+					gc.setFill(Color.color(renderColor.getRed(), renderColor.getGreen(), renderColor.getBlue(), 0.1));
 					gc.fillRect(gameMap.terrainMapToCanvasX(terrainMapX), gameMap.terrainMapToCanvasY(terrainMapY), TILE_WIDTH, TILE_HEIGHT);
 					gc.setStroke(renderColor);
 					gc.strokeRect(gameMap.terrainMapToCanvasX(terrainMapX), gameMap.terrainMapToCanvasY(terrainMapY), TILE_WIDTH, TILE_HEIGHT);
@@ -881,7 +889,7 @@ public class GameApplication extends Application
 								{
 									Image newImage = ((Water) terrain).getAnimFrame(no);
 									no++;
-									if (no > Water.NUM_ANIM_FRAMES)
+									if (no == Water.NUM_ANIM_FRAMES)
 										no = 0;
 									
 									Platform.runLater(new Runnable()
@@ -889,7 +897,6 @@ public class GameApplication extends Application
 										@Override
 										public void run()
 										{
-											clearTile(layer, locationX, locationY);
 											renderImageTile(layer, newImage, locationX, locationY);
 										}
 									});

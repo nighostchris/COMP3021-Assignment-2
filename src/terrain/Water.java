@@ -12,15 +12,15 @@ public class Water extends Terrain
 	public static final int NUM_ANIM_FRAMES = 4;
 	public static final int ANIM_TIME_PER_FRAME = 1000;
 	
-	private static final Image IMAGE_WATER = new Image("terrain_images/water1.png");
+	private static final Image IMAGE_WATER = new Image("terrain_images/water1.png", GameApplication.TILE_WIDTH, GameApplication.TILE_HEIGHT, true, true);
 	private static final Image[] ANIM_FRAMES = new Image[NUM_ANIM_FRAMES];
 	
 	static
 	{
-		ANIM_FRAMES[0] = new Image("terrain_images/water1.png");
-		ANIM_FRAMES[1] = new Image("terrain_images/water2.png");
-		ANIM_FRAMES[2] = new Image("terrain_images/water3.png");
-		ANIM_FRAMES[3] = new Image("terrain_images/water4.png");
+		ANIM_FRAMES[0] = new Image("terrain_images/water1.png", GameApplication.TILE_WIDTH, GameApplication.TILE_HEIGHT, true, true);
+		ANIM_FRAMES[1] = new Image("terrain_images/water2.png", GameApplication.TILE_WIDTH, GameApplication.TILE_HEIGHT, true, true);
+		ANIM_FRAMES[2] = new Image("terrain_images/water3.png", GameApplication.TILE_WIDTH, GameApplication.TILE_HEIGHT, true, true);
+		ANIM_FRAMES[3] = new Image("terrain_images/water4.png", GameApplication.TILE_WIDTH, GameApplication.TILE_HEIGHT, true, true);
 	}
 
 	public Water()
